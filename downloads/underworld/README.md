@@ -1,64 +1,103 @@
-# Underworld expansion for Paper 1.21.11
+# Underworld / Roleplay memory and explosion update
 
-This update uses the existing Underworld below Y=-65 in `world_nether`. Existing generated chunks are kept. Five biome themes and six adapted v7 landmarks appear only in newly generated chunks. The Nether above the boundary and the other generation zones retain their existing generator behavior.
+For Paper 1.21.11. Roleplay **1.5.3**, Generation **1.3.0**. Uses the existing Underworld below Y=-65 in `world_nether` and preserves its current dimension height, seed and generated chunks.
 
 ## Downloads
 
-- [UnstableGenerationPaper.jar](./UnstableGenerationPaper.jar?raw=true) — generation, protection and biome travel (1.2.0).
-- [UnstableRoleplay.jar](./UnstableRoleplay.jar?raw=true) — existing Roleplay plugin with the Underworld Biomes dialog button (1.5.2). Includes the previous Roleplay fixes and a shared 30-minute multi-kit claim cooldown.
-- [Unstable-Underworld-Expansion-1.21.11.zip](./Unstable-Underworld-Expansion-1.21.11.zip?raw=true) — merged height/biome datapack.
+- [UnstableRoleplay.jar](./UnstableRoleplay.jar?raw=true)
+- [UnstableGenerationPaper.jar](./UnstableGenerationPaper.jar?raw=true)
+- [Unstable-Underworld-Expansion-1.21.11.zip](./Unstable-Underworld-Expansion-1.21.11.zip?raw=true)
 
-## Install without resetting the world
+## Installation
 
-1. Stop the Paper server. Back up the world folders, both current JARs and both plugin data folders.
-2. Replace `UnstableGenerationPaper.jar` and `UnstableRoleplay.jar` in the Paper server's `plugins` folder. Keep the existing plugin folders and configuration files. Keep only one copy of each plugin JAR.
-3. In the server's main world's `datapacks` folder (usually `world/datapacks`), replace the old `Unstable-Underworld-1.21.11.zip` height datapack with `Unstable-Underworld-Expansion-1.21.11.zip`. The merged pack contains the exact original Nether dimension-type height definition. Keep it as a ZIP, with `pack.mcmeta` at its root.
-4. Do not install the original `Unstable_Underworld_1.21.11_v7.zip` alongside this update. Its separate dimension, global Nether noise override, automatic teleport functions and entity-removal functions are deliberately excluded from this adaptation. Remove any copy of that original v7 pack before starting; retain unrelated datapacks.
-5. Keep the existing working `world_nether` generator assignment, seed and world folders. Do not delete region files or reset the Nether. Do not change the Nether height settings.
-6. Fully restart the server; do not use `/reload` or a plugin hot reloader. Check `/datapack list enabled` and `/unstablegen status` in-game. `/underworldbiomes` opens the new biome menu. `/unstablereg` and the existing Underworld travel confirmation also have an Underworld Biomes button.
+1. Stop Paper and back up the worlds, current JARs and plugin data folders.
+2. Replace both existing plugin JARs. Keep their existing data folders/configs, with only one copy of each plugin JAR installed.
+3. Use the supplied merged datapack in your main world's `datapacks` folder, usually `world/datapacks`. Replace the earlier merged expansion pack or the original `Unstable-Underworld-1.21.11.zip` height pack. Do not enable multiple copies. The supplied ZIP has `pack.mcmeta` at its root; leave it zipped.
+4. Keep the original standalone `Unstable_Underworld_1.21.11_v7.zip` disabled. This adaptation uses the existing lower Nether, without v7's extra dimension, global noise override, automatic teleport functions or entity-removal functions. Keep unrelated datapacks and your working generator assignments.
+5. In Roleplay's existing config, ensure `world-protection.block-explosion-damage` is `true`. Edit the existing key; retain the other settings in that section.
+6. Start Paper normally. Installing these new JARs requires this one restart. Future supported config changes can use the commands below.
 
-The default configuration targets exactly `world_nether`, Y=-65 and below. No config edit is required for that setup. Existing configs receive these defaults internally. Optional settings can be added to `plugins/UnstableGenerationPaper/config.yml`:
+Never delete region files, reset the Nether, or change its height to install this update. Existing chunks are not regenerated or retrofitted; new biome terrain and landmarks remain restricted to newly generated chunks.
+
+## Explosions
+
+TNT, TNT minecarts, creepers, end crystals and other ordinary entity explosions keep normal entity damage and knockback while their affected block lists are cleared. Block explosions use the same terrain protection. Explosion/fireball/crystal ignition is also blocked to prevent subsequent fire damage to terrain.
+
+The explosive itself is still consumed. This protects surrounding terrain; it does not grant reusable TNT or restore a detonated bed/anchor. Existing Underworld placement/interaction restrictions and other plugins' combat/safe-zone protections remain in effect. This update never uncancels another plugin's damage events.
+
+The controlling Roleplay setting is:
+
+```yaml
+world-protection:
+  block-explosion-damage: true
+```
+
+When Roleplay is enabled, Generation follows that setting. Without Roleplay, Generation uses the same setting in its own config, defaulting to `true`. If globally disabled deliberately, the Underworld's local terrain protection still applies.
+
+## Config reload commands
+
+```text
+/roleplayreload
+/rpreload
+/unstablegen reload
+```
+
+- Roleplay reload permission: `unstableroleplay.reload` (default OP).
+- Generation reload permission: `unstablegeneration.admin` (default OP).
+- Console can run the same commands without the leading slash.
+- Invalid YAML is rejected before replacing the live config.
+- Roleplay reload applies config values read live, including automatic anticheat bans, explosion protection, multi-kit cooldown settings and the cached normal character-kit cooldown.
+- Generation reload applies protection/search settings and cancels pending biome rifts so new limits apply cleanly.
+- Database connection settings, existing timer schedules, world heights, generator assignments and datapack registry changes require a restart. These commands reload configuration; they do not unload/re-enable plugins or run Minecraft `/reload`.
+
+## Memory changes
+
+- Automatic protagonist checks retain their per-tick eligibility checks while using an eligibility snapshot with no progress text. Detailed progress text is built when requested from the menu.
+- Hidden/removed name tags skip repeated whole-world scans when there is no tracked label. The existing orphan cleanup remains active.
+- Rollback records share repeated world/material/block-state strings through a bounded 4,096-entry pool. Repeated changes to an already-recorded block skip allocating another rollback entry. Rollback history is retained and memory still scales with the number of recorded changes.
+- Amplified terrain reuses one bounded scratch array per generation worker rather than allocating one for each column. Workers have separate arrays; generation output is unchanged.
+- Biome travel defaults to one outstanding chunk-generation request, at most eight active searches, and four new candidate chunk requests per search. This reduces bursts from simultaneous menu travel. Normal player exploration is still scheduled by Paper.
+- The datapack is already small and has no repeating tick/load functions. Its biome and height files are byte-identical to the previous merged pack. Only its description changed.
+
+Optional Generation settings, within the existing `underworld-expansion` section:
 
 ```yaml
 underworld-expansion:
-  enabled: true
-  nether-world: world_nether
-  maximum-y: -65
-  protection: true
-  landmarks: true
-  search-samples: 2048
-  search-step: 192
+  max-concurrent-loads: 1
+  max-active-searches: 8
+  max-new-chunks-per-search: 4
 ```
 
-Do not add the section twice. Restart after changing it. `maximum-y` cannot be raised above -65 by this update.
+Missing keys use these defaults; no config replacement is necessary. Keep the existing nether-world, maximum-y, biome/landmark and search settings. The five biome themes, six adapted landmarks, boat/pot exceptions, menu integration and previous Roleplay fixes remain available.
 
-## What players get
+The shared multi-kit cooldown remains 30 minutes by default:
 
-- Verdant Wastes, Soul Lowlands, Ashen Wastes, Snowbound Grove and Crimson Depths.
-- Adapted v7 houses, ruins, sweetberry patches, oathbinders and two crystal templates, with their original chest items and the named weapon's attributes.
-- Snowy groves and crimson floating shelves. These features are adapted to the existing lower-Nether generator; this is not a wholesale replacement with v7's separate-dimension noise engine.
-- Block breaking and placement are blocked in the Underworld, including buckets and common terrain-changing interactions. Boats/chest boats and bamboo rafts remain placeable. Pot right-clicks and container access remain available. Explosions, pistons and mob block changes cannot alter protected terrain.
-- A five-biome dialog using the existing Roleplay menu style. Travel has a three-second standstill warmup and cancels on movement or damage before teleport starts. It checks landing space and respects permissions and the world border.
+```yaml
+multi-kit-cooldown-seconds: 1800
+```
 
-## Commands and permissions
+Changing Wraith choices does not bypass it. Its next-claim timestamp remains stored in player persistent data.
 
-- `/underworldbiomes` — open the menu; aliases `/uwbiomes`, `/underworldmenu`.
-- `/underworldbiomes verdant_wastes` (or `soul_lowlands`, `ashen_wastes`, `snowbound_grove`, `crimson_depths`) — request travel directly.
-- `unstablegeneration.underworld.travel` — enabled by default. When Roleplay is enabled, the existing `unstableroleplay.travel.underworld` permission is also required.
-- `unstablegeneration.underworld.build` — explicit protection bypass, disabled by default.
-- The existing `unstableroleplay.underworld.build` bypass is respected. Operators may already have that permission through Roleplay. Test protection using a normal player account.
+## Starting settings for an 8 GB allocation
 
-The navigator deliberately searches for ungenerated chunks. It does not regenerate existing chunks. If everything within its bounded search is already generated, travel reports that no new terrain was found. Try from another position or increase the bounded search settings. New and old terrain can have visible transitions; old chunks are not retrofitted with the new biomes or landmarks.
+Plugin changes cannot guarantee total server RAM use: player count, loaded chunks, other plugins and the retained extended-height world all contribute.
+
+Start with these existing `server.properties` values and restart:
+
+```properties
+view-distance=6
+simulation-distance=4
+```
+
+If your hosting allocation is 8 GB, a Java heap limit of roughly 6 GB leaves room for JVM/native overhead. A typical startup is `java -Xms2G -Xmx6G -jar paper.jar nogui` (use your actual server JAR name or hosting panel's Java-memory setting). Adjust distances/player capacity using live measurements. Do not allocate all 8 GB to `-Xmx`.
 
 ## Validation
 
-- 8,297 automated assertions passed with API fixtures: protection exceptions, biome coverage, terrain/landmark bounds, original chest loot, travel permissions, safe landings and asynchronous cancellation/completion.
-- Ran original and patched generator methods under isolated class loaders with those fixtures: 1,572,864 Nether block comparisons across three sampled chunks confirmed identical output above Y=-65, and a sampled Overworld chunk was unchanged.
-- Bytecode data-flow verification passed for 318 generation methods and 1,265 Roleplay methods. JAR/ZIP integrity, JSON and YAML parsing passed. No compile-time API fixtures are bundled.
-- All original JAR entries except the specific generation/menu hooks and plugin metadata/default config remain byte-identical. The original height definition is byte-identical in the merged pack.
+- 8,297 existing protection, biome, landmark/loot and travel assertions passed.
+- 10,288 additional assertions passed for explosion block lists/fire, reload permission and invalid-config handling, cooldown reload, bounded string pooling, scratch-array worker isolation, simultaneous travel requests and unsafe-landing search limits.
+- 10,000 randomized JVM-executed comparisons confirmed identical protagonist eligibility and menu progress text; automatic snapshots contain no display lines.
+- 1,572,864 sampled Nether block comparisons matched Generation 1.2.0 exactly. The sampled Overworld output and repeated amplified-column output also matched.
+- Bytecode data-flow verification passed for 325 Generation methods and 1,279 Roleplay methods. JAR/ZIP integrity and config/datapack parsing passed. No compile-time API fixtures are bundled.
+- The existing multi-kit helper and unrelated original JAR entries are preserved.
 
-A live Paper 1.21.11 server was not available here. Start on a backup copy first to check compatibility with your installed plugins and the real world before reopening to players.
-
-## Multi-kit cooldown update (Roleplay 1.5.2)
-
-`/multikit` has a shared 30-minute cooldown across Mafia, Null and all Wraith choices. Switching `/wraithkit` choices does not reset it. Only successful claims start the cooldown. It is stored in player persistent data. Existing configs default to `multi-kit-cooldown-seconds: 1800`; add that top-level key to make it explicit. Replace only the Roleplay JAR and restart for this update. [Cooldown installation notes and validation](./COOLDOWN-UPDATE.txt).
+These checks used API fixtures and isolated JVM test harnesses. No live Paper server, heap profile or complete network of your other installed plugins was available. Test a backup copy before opening the updated server to players.
