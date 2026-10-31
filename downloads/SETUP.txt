@@ -1,0 +1,69 @@
+UnstableHub 3.0.1 - Velocity navigation fix
+
+INSTALLATION
+1. Stop your Paper hub backend server.
+2. Back up its UnstableHub.jar and plugins/UnstableHub folder.
+3. Replace that JAR with the supplied UnstableHub.jar. Keep the existing data folder and configuration.
+4. Configure the server names and Velocity setting below, then restart the proxy and hub.
+
+VELOCITY CONFIGURATION
+In your proxy's velocity.toml, edit the EXISTING [servers] entries so every realm has a registered name and its real backend address. Example addresses below come from the uploaded plugin defaults; replace them with your actual addresses:
+
+[servers]
+roleplay = "192.168.1.109:25566"
+smp = "192.168.1.109:25567"
+pvp = "192.168.1.109:25568"
+events = "192.168.1.109:25569"
+
+Keep your existing hub entry, try list, forwarding configuration, and other settings.
+
+In the EXISTING [advanced] section, set:
+
+bungee-plugin-message-channel = true
+
+Do not add a second [servers] or [advanced] section. Edit the existing ones and restart Velocity.
+
+HUB CONFIGURATION
+In plugins/UnstableHub/config.yml, add a servers mapping inside the existing navigation section. The values must match the server-name keys in Velocity [servers], not IP addresses:
+
+navigation:
+  servers:
+    roleplay: "roleplay"
+    smp: "smp"
+    pvp: "pvp"
+    events: "events"
+
+Keep the existing navigation.items and navigation.transfers settings. Existing navigation.transfers.<realm>.enabled flags are still respected; set events.enabled to true only when that server is ready.
+
+If your proxy uses another name, such as survival, set navigation.servers.smp to "survival".
+
+Existing installations can keep using map-boards.destinations.<realm> as their server-name mapping without adding navigation.servers. Explicit navigation.servers values take precedence, followed by navigation.transfers.<realm>.server, followed by map-boards.destinations.<realm>. New packaged defaults do not override an existing custom legacy mapping.
+
+Legacy navigation.transfers.<realm>.host and port fields are retained but ignored for switching. Backend IP addresses belong in Velocity's registered server list. The plugin cannot infer arbitrary proxy server names from IP addresses.
+
+USAGE
+Click a realm in the navigator or on a realm map board.
+Or run one of these in Minecraft:
+/navigator roleplay
+/send_to_server roleplay
+/send_to_server smp
+/send_to_server pvp
+/send_to_server events
+
+The new /send_to_server name is a shortcut to the existing navigator command. It needs no PlaceholderAPI expansion or companion proxy plugin.
+
+WHAT CHANGED
+- Navigator sends the BungeeCord-compatible Connect request through Velocity instead of using Minecraft Player.transfer(host, port).
+- Roleplay, SMP, and PvP boards share the same destination mapping as the navigator.
+- The selector status respects disabled or invalid destinations.
+- The selector closes before sending a connection request.
+- Official/info boards and the Events & Rewards board retain their original behavior; the latter opens daily rewards.
+- Other plugin systems, assets, configuration values, and classes are preserved.
+
+VALIDATION
+64 automated checks passed for protocol payloads, alias resolution, legacy mappings, disabled/invalid destinations, offline players, and failure handling. Bytecode data-flow checks passed for 261 methods; no direct Player.transfer calls remain. Both ZIP integrity and configuration preservation checks passed.
+
+No live Paper/Velocity network was available for testing. Connection requests still require correctly configured, reachable backend servers and the Velocity messaging setting above. If a server is offline, Velocity handles the failure; the hub only reports that it requested the connection.
+
+REFERENCE
+https://docs.papermc.io/velocity/dev/plugin-messaging/#bungeecord-channel-compatibility
