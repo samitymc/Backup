@@ -1,6 +1,6 @@
 # Underworld / Roleplay memory and explosion update
 
-For Paper 1.21.11. Roleplay **1.5.3**, Generation **1.3.0**. Uses the existing Underworld below Y=-65 in `world_nether` and preserves its current dimension height, seed and generated chunks.
+For Paper 1.21.11. Roleplay **1.5.4**, Generation **1.3.0**. Uses the existing Underworld below Y=-65 in `world_nether` and preserves its current dimension height, seed and generated chunks.
 
 ## Downloads
 
@@ -101,3 +101,13 @@ If your hosting allocation is 8 GB, a Java heap limit of roughly 6 GB leaves roo
 - The existing multi-kit helper and unrelated original JAR entries are preserved.
 
 These checks used API fixtures and isolated JVM test harnesses. No live Paper server, heap profile or complete network of your other installed plugins was available. Test a backup copy before opening the updated server to players.
+
+## Teleport-here update (Roleplay 1.5.4)
+
+Use `/tpahere <player>` to ask another online player to teleport to your current location. They receive the same styled native teleport request dialog as `/tpa`, with the direction stated explicitly. They can use its ACCEPT REQUEST / DENY REQUEST buttons or `/tpaccept` / `/tpdeny`. Requests expire after 60 seconds and use the same pending-request map as `/tpa`; the latest request for a recipient replaces their previous one.
+
+Accepting `/tpahere` moves the invited player to the requester's location at acceptance time, including across worlds. Normal `/tpa` still moves the requester to the recipient. Existing asynchronous teleport and name-tag handling are retained. Self-requests and offline targets are rejected, and player-name tab completion is available. There is no extra permission requirement beyond normal player command access.
+
+For this addition, replace only the Roleplay JAR and fully restart once. Keep your config/data folder, Generation plugin and datapack. `/roleplayreload` reloads config; it cannot load a new JAR.
+
+23 JVM-executed harness tests passed for registration, both teleport directions, shared accept/deny commands and buttons, matching dialog text, cross-world locations, superseded/expired requests, offline/self/console handling, request-record semantics and tab completion. Bytecode verification passed for 1,284 Roleplay methods. Only the two teleport-request classes and plugin metadata changed from 1.5.3; every other JAR entry, including config, memory/reload/explosion fixes and the shared multi-kit cooldown, is byte-identical. No live Paper server was available for testing.
