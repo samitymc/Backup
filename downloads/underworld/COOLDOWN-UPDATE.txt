@@ -1,0 +1,27 @@
+UnstableRoleplay 1.5.2 - shared multi-kit cooldown
+
+INSTALL
+1. Stop the Paper server and back up the current Roleplay JAR and plugin data folder.
+2. Replace the existing Roleplay JAR with this UnstableRoleplay.jar. Keep only one copy of the plugin and keep its existing data folder/configuration.
+3. Start the server normally. This update requires a restart; do not hot-reload it.
+
+BEHAVIOR
+/multikit now has a 30-minute cooldown per player, shared across Mafia, Null and all three Wraith kit choices. Switching Wraith choices with /wraithkit does not reset the claim cooldown. That command still selects a kit; /multikit gives the items.
+
+The cooldown starts only after a kit is successfully applied. Missing roles, unavailable kits, database errors, offline-player callbacks and decode failures do not charge the cooldown. Duplicate requests are blocked while the first request is processing. Players see their remaining wait when trying again too soon.
+
+The next permitted claim time is stored in player persistent data and survives normal player saves, reconnects and server restarts. Players without a previously recorded multi-kit claim can make their first claim immediately after this update; historical claims were not recorded by the old plugin.
+
+CONFIG
+No edit is needed: existing configs default to 1800 seconds. To make it explicit, add this once at the top level of plugins/UnstableRoleplay/config.yml:
+
+multi-kit-cooldown-seconds: 1800
+
+Restart after changing it. This setting is separate from the normal character-kit cooldown.
+
+All prior fixes, including the Underworld biome menu integration, are retained. Neither other plugins nor the Underworld datapack need replacing for this cooldown update.
+
+VALIDATION
+15 automated checks passed for expiry boundaries, repeat requests, failure retries, independent players, reconnects and loading the persistent timestamp with a fresh plugin class loader. Bytecode data-flow checks and JAR/config integrity checks passed. Only the multi-kit command hooks, the new helper, plugin version and bundled default config changed from 1.5.1.
+
+These checks used compile-time API fixtures; no live Paper server was available for testing.

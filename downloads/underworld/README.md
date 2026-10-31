@@ -5,7 +5,7 @@ This update uses the existing Underworld below Y=-65 in `world_nether`. Existing
 ## Downloads
 
 - [UnstableGenerationPaper.jar](./UnstableGenerationPaper.jar?raw=true) — generation, protection and biome travel (1.2.0).
-- [UnstableRoleplay.jar](./UnstableRoleplay.jar?raw=true) — existing Roleplay plugin with the Underworld Biomes dialog button (1.5.1). Includes the previous Roleplay fixes.
+- [UnstableRoleplay.jar](./UnstableRoleplay.jar?raw=true) — existing Roleplay plugin with the Underworld Biomes dialog button (1.5.2). Includes the previous Roleplay fixes and a shared 30-minute multi-kit claim cooldown.
 - [Unstable-Underworld-Expansion-1.21.11.zip](./Unstable-Underworld-Expansion-1.21.11.zip?raw=true) — merged height/biome datapack.
 
 ## Install without resetting the world
@@ -58,3 +58,7 @@ The navigator deliberately searches for ungenerated chunks. It does not regenera
 - All original JAR entries except the specific generation/menu hooks and plugin metadata/default config remain byte-identical. The original height definition is byte-identical in the merged pack.
 
 A live Paper 1.21.11 server was not available here. Start on a backup copy first to check compatibility with your installed plugins and the real world before reopening to players.
+
+## Multi-kit cooldown update (Roleplay 1.5.2)
+
+`/multikit` has a shared 30-minute cooldown across Mafia, Null and all Wraith choices. Switching `/wraithkit` choices does not reset it. Only successful claims start the cooldown. It is stored in player persistent data. Existing configs default to `multi-kit-cooldown-seconds: 1800`; add that top-level key to make it explicit. Replace only the Roleplay JAR and restart for this update. [Cooldown installation notes and validation](./COOLDOWN-UPDATE.txt).
